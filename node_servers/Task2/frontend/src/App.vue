@@ -1,5 +1,5 @@
 <template>
-	<div class="container">
+	<div>
 		<div class="bg-white pb-4 px-4 rounded-md w-full">
 			<Header
 				@logout-clicked="doLogout"
@@ -54,22 +54,22 @@ export default {
 		},
 		async getUsers(query) {
 			try {
-				return (await axios.get("/api?q=" + (query ?? ""))).data;
+				return (await axios.get("//task.namesmt.ga:2222/api?q=" + (query ?? ""))).data;
 			} catch (err) {
 				this.pushError("Failed to retrieve Users: " + err.response.data.message);
-				if (err.response.data.message === "unauthenticated") this.$router.push("/login");
+				if (err.response.data.message === "unauthenticated") this.$router.push("/front2/login");
 			}
 		},
 		async patchUser(user) {
 			try {
-				return (await axios.patch("/api", { user })).data;
+				return (await axios.patch("//task.namesmt.ga:2222/api", { user })).data;
 			} catch (err) {
 				this.pushError("Failed to send patch request: " + err.response.data.message);
 			}
 		},
 		async big_patchUser(users) {
 			try {
-				return (await axios.patch("/api/big", { users })).data;
+				return (await axios.patch("//task.namesmt.ga:2222/api/big", { users })).data;
 			} catch (err) {
 				this.pushError(
 					`Failed to send (big) patch request: ${err.response.data.message}, Errors: ${err.response.data.errors}`
@@ -108,8 +108,8 @@ export default {
 		},
 		async doLogin(data) {
 			try {
-				if ((await axios.post("/auth", { user: data })).data) {
-					this.$router.push("/");
+				if ((await axios.post("https://task.namesmt.ga/api/", data)).data) {
+					this.$router.push("/front2/");
 					this.reloadUsers(this.searchvalue);
 					this.error_popup = "";
 				}
@@ -120,9 +120,9 @@ export default {
 		doLogout() {
 			//use Promise style is more readable?, idk, last func so lets just make it different lmao
 			axios
-				.post("/auth/logout")
+				.post("https://task.namesmt.ga/api/logout")
 				.then(() => {
-					this.$router.push("/login");
+					this.$router.push("/front2/login");
 				})
 				.catch((err) => {
 					this.pushError("Failed to send post request (Logout)");
@@ -132,7 +132,7 @@ export default {
 	created() {
 		setTimeout(() => {
 			// Vue path on created/mounted/etcs is always '/' regardless of url, setTimeout makes it called after Vue setup the route path
-			if (this.$route.path === "/") this.reloadUsers();
+			if (this.$route.path === "/front2/") this.reloadUsers();
 		}, 0);
 	},
 };
