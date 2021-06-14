@@ -8,7 +8,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Response;
-use Laravel\Sanctum\PersonalAccessToken;
+use App\Http\Requests\Auth\LoginRequest;
+
 
 class AuthController extends Controller
 {
@@ -30,13 +31,15 @@ class AuthController extends Controller
 		]);
 	}
 
-	public function login(Request $request)
+	public function login(LoginRequest $request)
 	{
 		if (!Auth::attempt($request->only('email', 'password'))) {
 			return response([
 				'message' => 'Invalid credentials!'
 			], Response::HTTP_UNAUTHORIZED);
 		}
+
+		$request->session()->regenerate();
 
 		$user = Auth::user();
 		Auth::login($user);
@@ -53,10 +56,15 @@ class AuthController extends Controller
 		return Auth::user();
 	}
 
-	public function logout()
+	public function logout(Request $request)
 	{
 		$cookie = Cookie::forget('shouldbeasecretphrase');
+
 		Auth::guard('web')->logout();
+
+		$request->session()->invalidate();
+
+		$request->session()->regenerateToken();
 
 		return response('1')->withCookie($cookie);
 	}
