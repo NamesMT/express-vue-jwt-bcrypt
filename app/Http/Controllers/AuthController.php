@@ -38,15 +38,18 @@ class AuthController extends Controller
 				'message' => 'Invalid credentials!'
 			], Response::HTTP_UNAUTHORIZED);
 		}
-
+		// Gives user a new session cookie
 		$request->session()->regenerate();
 
+		// Generate SSO token ( & cookie )
 		$user = Auth::user();
-		Auth::login($user);
-
 		$token = $user->createToken('token')->plainTextToken;
 
 		$cookie = cookie('shouldbeasecretphrase', $token, 60 * 24, null, null, null, true, false, 'none');
+		//
+
+		// Login user on Laravel (binds to current session cookie)
+		Auth::login($user);
 
 		return response('1')->withCookie($cookie);
 	}
@@ -58,13 +61,13 @@ class AuthController extends Controller
 
 	public function logout(Request $request)
 	{
+		// Destroy SSO Token
 		$cookie = Cookie::forget('shouldbeasecretphrase');
+		//
 
+		// Logout of Laravel / make session invalid
 		Auth::guard('web')->logout();
-
 		$request->session()->invalidate();
-
-		$request->session()->regenerateToken();
 
 		return response('1')->withCookie($cookie);
 	}
